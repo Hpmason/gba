@@ -15,13 +15,13 @@ macro_rules! bitfield_int {
   ($inner:ty; $low:literal ..= $high:literal : $nt:ident, $get:ident, $with:ident, $set:ident) => {
     #[inline]
     pub const fn $get(self) -> $nt {
-      const MASK: $inner = ((1 << $high) - 1) << $low;
+      const MASK: $inner = ((1 << ($high - $low + 1)) - 1) << $low;
       ((self.0 & MASK) >> $low) as $nt
     }
     #[inline]
     pub const fn $with(self, $get: $nt) -> Self {
-      const MASK: $inner = ((1 << $high) - 1) << $low;
-      Self(self.0 ^ ((self.0 ^ ($get as $inner)) & MASK))
+      const MASK: $inner = ((1 << ($high - $low + 1)) - 1) << $low;
+      Self(self.0 ^ ((self.0 ^ (($get as $inner) << $low)) & MASK))
     }
     #[inline]
     pub fn $set(&mut self, $get: $nt) {
@@ -36,12 +36,12 @@ macro_rules! bitfield_newtype {
   ($inner:ty; $low:literal ..= $high:literal : $nt:ident, $get:ident, $with:ident, $set:ident) => {
     #[inline]
     pub const fn $get(self) -> $nt {
-      const MASK: $inner = ((1 << $high) - 1) << $low;
+      const MASK: $inner = ((1 << ($high - $low + 1)) - 1) << $low;
       $nt(self.0 & MASK)
     }
     #[inline]
     pub const fn $with(self, $get: $nt) -> Self {
-      const MASK: $inner = ((1 << $high) - 1) << $low;
+      const MASK: $inner = ((1 << ($high - $low + 1)) - 1) << $low;
       Self(self.0 ^ ((self.0 ^ $get.0) & MASK))
     }
     #[inline]
@@ -182,6 +182,21 @@ pub use register_ram_reset_control::*;
 
 mod interrupt_flags;
 pub use interrupt_flags::*;
+
+mod fifo_control;
+pub use fifo_control::*;
+
+mod fifo_reset;
+pub use fifo_reset::*;
+
+mod sound_control;
+pub use sound_control::*;
+
+mod sound_status;
+pub use sound_status::*;
+
+mod sound_bias;
+pub use sound_bias::*;
 
 mod timer_control;
 pub use timer_control::*;
